@@ -1,14 +1,14 @@
+
+
 # === Random Forest Results ===
 #               precision    recall  f1-score   support
 
-#            0       0.75      1.00      0.86     99919
-#            1       1.00      0.64      0.78     91593
+#            0       0.84      1.00      0.91     99919
+#            1       1.00      0.80      0.89     91593
 
-#     accuracy                           0.83    191512
-#    macro avg       0.88      0.82      0.82    191512
-# weighted avg       0.87      0.83      0.82    191512
-
-
+#     accuracy                           0.90    191512
+#    macro avg       0.92      0.90      0.90    191512
+# weighted avg       0.92      0.90      0.90    191512
 #####################################################################################
 import json
 import os
@@ -16,12 +16,15 @@ import pandas as pd
 import numpy as np
 import joblib  # for saving the model
 import matplotlib.pyplot as plt
+from xgboost import XGBClassifier
 
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import precision_recall_fscore_support
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, confusion_matrix
 from sklearn.ensemble import IsolationForest
+from sklearn.model_selection import cross_val_score
+from sklearn.metrics import make_scorer, precision_score, recall_score, f1_score
 
 
 #Load the data set and use only the first 5000 rows. Had a low memory issues so i set it to false.
@@ -192,6 +195,44 @@ X_test = X_test.replace([np.inf, -np.inf], np.nan)
 X_test = X_test.dropna()
 y_test = y_test.loc[X_test.index]
 
+# from sklearn.model_selection import StratifiedKFold
+# from sklearn.metrics import classification_report
+#
+# # 10-fold cross-validation
+# cv = StratifiedKFold(n_splits=10, shuffle=True, random_state=42)
+#
+# print("=== 10-Fold Classification Reports ===")
+# fold = 1
+# for train_index, val_index in cv.split(X_train, y_train):
+#     X_tr, X_val = X_train.iloc[train_index], X_train.iloc[val_index]
+#     y_tr, y_val = y_train.iloc[train_index], y_train.iloc[val_index]
+#
+#     rf = RandomForestClassifier(
+#         n_estimators=100,
+#         max_depth=None,
+#         min_samples_split=3,
+#         min_samples_leaf=2,
+#         class_weight={0: 1.0, 1: 2.25},
+#         random_state=42,
+#         n_jobs=-1
+#     )
+#     rf.fit(X_tr, y_tr)
+#     y_pred = rf.predict(X_val)
+#
+#     print(f"\n--- Fold {fold} ---")
+#     print(classification_report(y_val, y_pred, digits=4))
+#     fold += 1
+#
+# # Train on full X_train
+# rf.fit(X_train, y_train)
+#
+# # Evaluate on completely separate data (e.g., df9)
+# y_pred = rf.predict(X_test)
+# print("=== Final Test Set Results ===")
+# print(classification_report(y_test, y_pred, digits=4))
+
+
+
 
 
 
@@ -209,16 +250,20 @@ n_runs = 1
 all_reports = []
 
 for i in range(n_runs):
-    rf = RandomForestClassifier(
+
+    xgb = XGBClassifier(
         n_estimators=250,
-        max_depth=None,
-        min_samples_split=3,
-        min_samples_leaf=2,
-        class_weight={0: 1.0, 1: 2.25},
-        random_state=42
+        learning_rate=0.1,
+        max_depth=8,
+        scale_pos_weight=2.25,
+        use_label_encoder=False,
+        eval_metric='logloss',
+        n_jobs=-1
     )
-    rf.fit(X_train, y_train)
-    y_pred = rf.predict(X_test)
+    xgb.fit(X_train, y_train)
+
+    y_probs = xgb.predict_proba(X_test)[:, 1]
+    y_pred = (y_probs >= 0.05).astype(int)
 
     precision, recall, f1, _ = precision_recall_fscore_support(y_test, y_pred, average='binary')
     all_reports.append((precision, recall, f1))
@@ -227,19 +272,14 @@ for i in range(n_runs):
 all_reports = np.array(all_reports)
 avg_precision, avg_recall, avg_f1 = all_reports.mean(axis=0)
 
-print("=== Averaged Results over", n_runs, "runs ===")
-print(f"Precision: {avg_precision:.4f}")
-print(f"Recall:    {avg_recall:.4f}")
-print(f"F1-score:  {avg_f1:.4f}")
-
 
 print("=== Random Forest Results ===")
 print(classification_report(y_test, y_pred))
-
-# Save the trained model to a .pkl file so it can be used later for live detection. This is the program that will be going into the
-#Rasberry Pi
+#
+# Save the trained model to a .pkl file so it caAn be used later for live detection. This is the program that will be going into the
+# Rasberry Pi
 model_path = os.path.join('models', 'ddos_rf_model.pkl')
-joblib.dump(rf, model_path)
+joblib.dump(xgb, model_path)
 print(f"✅ Model saved to {model_path}")
 
 # Save features
