@@ -1,14 +1,14 @@
+#=== Results ===
+#              precision    recall  f1-score   support
+#
+#           0       1.00      0.98      0.99    199846
+#           1       0.98      1.00      0.99    180902
+#
+#    accuracy                           0.99    380748
+#   macro avg       0.99      0.99      0.99    380748
+#weighted avg       0.99      0.99      0.99    380748
 
 
-# === Random Forest Results ===
-#               precision    recall  f1-score   support
-
-#            0       0.84      1.00      0.91     99919
-#            1       1.00      0.80      0.89     91593
-
-#     accuracy                           0.90    191512
-#    macro avg       0.92      0.90      0.90    191512
-# weighted avg       0.92      0.90      0.90    191512
 #####################################################################################
 import json
 import os
@@ -17,6 +17,7 @@ import numpy as np
 import joblib  # for saving the model
 import matplotlib.pyplot as plt
 from xgboost import XGBClassifier
+from sklearn.metrics import precision_recall_curve
 
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import precision_recall_fscore_support
@@ -28,15 +29,15 @@ from sklearn.metrics import make_scorer, precision_score, recall_score, f1_score
 
 
 #Load the data set and use only the first 5000 rows. Had a low memory issues so i set it to false.
-df = pd.read_csv(r"C:\Users\jpo2k\PycharmProjects\RESEARCHPROJECT\datasets\DrDoS_DNS.csv",nrows=100000, low_memory=False)
-df3 = pd.read_csv(r"C:\Users\jpo2k\PycharmProjects\RESEARCHPROJECT\datasets\DrDoS_UDP.csv",nrows=100000, low_memory=False)
-df4 = pd.read_csv(r"C:\Users\jpo2k\PycharmProjects\RESEARCHPROJECT\datasets\Syn.csv",nrows=100000, low_memory=False)
-df5 = pd.read_csv(r"C:\Users\jpo2k\PycharmProjects\RESEARCHPROJECT\datasets\Friday-02-03-2018_TrafficForML_CICFlowMeter.csv",nrows= 10000, low_memory=False)
-df6 = pd.read_csv(r"C:\Users\jpo2k\PycharmProjects\RESEARCHPROJECT\datasets\Monday-WorkingHours.pcap_ISCX-FULLBENIGN.csv",nrows= 100000, low_memory=False)
-df7 = pd.read_csv(r"C:\Users\jpo2k\PycharmProjects\RESEARCHPROJECT\datasets\Wednesday-workingHours.pcap_ISCX-SLOWLORIS.csv",nrows= 20000, low_memory=False)
-df8 = pd.read_csv(r"C:\Users\jpo2k\PycharmProjects\RESEARCHPROJECT\datasets\Friday-WorkingHours-Afternoon-DDos.pcap_ISCX.csv",nrows= 20000, low_memory=False)
+df = pd.read_csv(r"C:\Users\jpo2k\PycharmProjects\RESEARCHPROJECT\datasets\DrDoS_DNS.csv",nrows=200000, low_memory=False)
+df3 = pd.read_csv(r"C:\Users\jpo2k\PycharmProjects\RESEARCHPROJECT\datasets\DrDoS_UDP.csv",nrows=200000, low_memory=False)
+df4 = pd.read_csv(r"C:\Users\jpo2k\PycharmProjects\RESEARCHPROJECT\datasets\Syn.csv",nrows=200000, low_memory=False)
+df5 = pd.read_csv(r"C:\Users\jpo2k\PycharmProjects\RESEARCHPROJECT\datasets\Friday-02-03-2018_TrafficForML_CICFlowMeter.csv",nrows= 200000, low_memory=False)
+df6 = pd.read_csv(r"C:\Users\jpo2k\PycharmProjects\RESEARCHPROJECT\datasets\Monday-WorkingHours.pcap_ISCX-FULLBENIGN.csv",nrows= 200000, low_memory=False)
+df7 = pd.read_csv(r"C:\Users\jpo2k\PycharmProjects\RESEARCHPROJECT\datasets\Wednesday-workingHours.pcap_ISCX-SLOWLORIS.csv",nrows= 200000, low_memory=False)
+df8 = pd.read_csv(r"C:\Users\jpo2k\PycharmProjects\RESEARCHPROJECT\datasets\Friday-WorkingHours-Afternoon-DDos.pcap_ISCX.csv",nrows= 200000, low_memory=False)
 df9 = pd.read_csv(r"C:\Users\jpo2k\PycharmProjects\RESEARCHPROJECT\datasets\test_formatted_pcap_to_csv.csv", low_memory=False)
-df2 = pd.read_csv(r"C:\Users\jpo2k\PycharmProjects\RESEARCHPROJECT\datasets\data.csv",nrows=100000, low_memory=False)
+df2 = pd.read_csv(r"C:\Users\jpo2k\PycharmProjects\RESEARCHPROJECT\datasets\data.csv",nrows=200000, low_memory=False)
 
 #make sure the csv file loaded
 print("CSV loaded successfully.")
@@ -195,56 +196,6 @@ X_test = X_test.replace([np.inf, -np.inf], np.nan)
 X_test = X_test.dropna()
 y_test = y_test.loc[X_test.index]
 
-# from sklearn.model_selection import StratifiedKFold
-# from sklearn.metrics import classification_report
-#
-# # 10-fold cross-validation
-# cv = StratifiedKFold(n_splits=10, shuffle=True, random_state=42)
-#
-# print("=== 10-Fold Classification Reports ===")
-# fold = 1
-# for train_index, val_index in cv.split(X_train, y_train):
-#     X_tr, X_val = X_train.iloc[train_index], X_train.iloc[val_index]
-#     y_tr, y_val = y_train.iloc[train_index], y_train.iloc[val_index]
-#
-#     rf = RandomForestClassifier(
-#         n_estimators=100,
-#         max_depth=None,
-#         min_samples_split=3,
-#         min_samples_leaf=2,
-#         class_weight={0: 1.0, 1: 2.25},
-#         random_state=42,
-#         n_jobs=-1
-#     )
-#     rf.fit(X_tr, y_tr)
-#     y_pred = rf.predict(X_val)
-#
-#     print(f"\n--- Fold {fold} ---")
-#     print(classification_report(y_val, y_pred, digits=4))
-#     fold += 1
-#
-# # Train on full X_train
-# rf.fit(X_train, y_train)
-#
-# # Evaluate on completely separate data (e.g., df9)
-# y_pred = rf.predict(X_test)
-# print("=== Final Test Set Results ===")
-# print(classification_report(y_test, y_pred, digits=4))
-
-
-
-
-
-
-# Debug: check how many rows are valid
-# print("\n=== Feature Check ===")
-# print("Shape of X before dropna:", X.shape)
-# print("NaNs per feature:\n", X.isnull().sum())
-# print("Total rows with any missing feature values:", X.isnull().any(axis=1).sum())
-# print("Rows remaining after dropna:", X.dropna().shape[0])
-
-
-# train the Random Forest Classifier
 
 n_runs = 1
 all_reports = []
@@ -254,7 +205,7 @@ for i in range(n_runs):
     xgb = XGBClassifier(
         n_estimators=250,
         learning_rate=0.1,
-        max_depth=8,
+        max_depth=15,
         scale_pos_weight=2.25,
         use_label_encoder=False,
         eval_metric='logloss',
@@ -263,7 +214,14 @@ for i in range(n_runs):
     xgb.fit(X_train, y_train)
 
     y_probs = xgb.predict_proba(X_test)[:, 1]
-    y_pred = (y_probs >= 0.05).astype(int)
+
+    #find the best threshold
+    precision_vals, recall_vals, thresholds = precision_recall_curve(y_test, y_probs)
+    f1_vals = 2 * (precision_vals * recall_vals) / (precision_vals + recall_vals + 1e-8)
+    best_threshold = thresholds[np.argmax(f1_vals)]
+
+    # then we reclassify with optimal threshold
+    y_pred = (y_probs >= best_threshold).astype(int)
 
     precision, recall, f1, _ = precision_recall_fscore_support(y_test, y_pred, average='binary')
     all_reports.append((precision, recall, f1))
@@ -273,7 +231,7 @@ all_reports = np.array(all_reports)
 avg_precision, avg_recall, avg_f1 = all_reports.mean(axis=0)
 
 
-print("=== Random Forest Results ===")
+print("=== Results ===")
 print(classification_report(y_test, y_pred))
 #
 # Save the trained model to a .pkl file so it caAn be used later for live detection. This is the program that will be going into the
