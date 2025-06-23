@@ -1,12 +1,13 @@
 #=== Results ===
 #              precision    recall  f1-score   support
 #
-#           0       1.00      0.98      0.99    199846
-#           1       0.98      1.00      0.99    180902
+#           0       0.99      0.97      0.98    529862
+#           1       0.99      1.00      0.99   1379983
 #
-#    accuracy                           0.99    380748
-#   macro avg       0.99      0.99      0.99    380748
-#weighted avg       0.99      0.99      0.99    380748
+#    accuracy                           0.99   1909845
+#   macro avg       0.99      0.98      0.99   1909845
+#weighted avg       0.99      0.99      0.99   1909845
+
 
 
 #####################################################################################
@@ -29,15 +30,15 @@ from sklearn.metrics import make_scorer, precision_score, recall_score, f1_score
 
 
 #Load the data set and use only the first 5000 rows. Had a low memory issues so i set it to false.
-df = pd.read_csv(r"C:\Users\jpo2k\PycharmProjects\RESEARCHPROJECT\datasets\DrDoS_DNS.csv",nrows=200000, low_memory=False)
-df3 = pd.read_csv(r"C:\Users\jpo2k\PycharmProjects\RESEARCHPROJECT\datasets\DrDoS_UDP.csv",nrows=200000, low_memory=False)
-df4 = pd.read_csv(r"C:\Users\jpo2k\PycharmProjects\RESEARCHPROJECT\datasets\Syn.csv",nrows=200000, low_memory=False)
-df5 = pd.read_csv(r"C:\Users\jpo2k\PycharmProjects\RESEARCHPROJECT\datasets\Friday-02-03-2018_TrafficForML_CICFlowMeter.csv",nrows= 200000, low_memory=False)
-df6 = pd.read_csv(r"C:\Users\jpo2k\PycharmProjects\RESEARCHPROJECT\datasets\Monday-WorkingHours.pcap_ISCX-FULLBENIGN.csv",nrows= 200000, low_memory=False)
-df7 = pd.read_csv(r"C:\Users\jpo2k\PycharmProjects\RESEARCHPROJECT\datasets\Wednesday-workingHours.pcap_ISCX-SLOWLORIS.csv",nrows= 200000, low_memory=False)
-df8 = pd.read_csv(r"C:\Users\jpo2k\PycharmProjects\RESEARCHPROJECT\datasets\Friday-WorkingHours-Afternoon-DDos.pcap_ISCX.csv",nrows= 200000, low_memory=False)
+df = pd.read_csv(r"C:\Users\jpo2k\PycharmProjects\RESEARCHPROJECT\datasets\DrDoS_DNS.csv", low_memory=False)
+df3 = pd.read_csv(r"C:\Users\jpo2k\PycharmProjects\RESEARCHPROJECT\datasets\DrDoS_UDP.csv", low_memory=False)
+df4 = pd.read_csv(r"C:\Users\jpo2k\PycharmProjects\RESEARCHPROJECT\datasets\Syn.csv", low_memory=False)
+df5 = pd.read_csv(r"C:\Users\jpo2k\PycharmProjects\RESEARCHPROJECT\datasets\Friday-02-03-2018_TrafficForML_CICFlowMeter.csv", low_memory=False)
+df6 = pd.read_csv(r"C:\Users\jpo2k\PycharmProjects\RESEARCHPROJECT\datasets\Monday-WorkingHours.pcap_ISCX-FULLBENIGN.csv", low_memory=False)
+df7 = pd.read_csv(r"C:\Users\jpo2k\PycharmProjects\RESEARCHPROJECT\datasets\Wednesday-workingHours.pcap_ISCX-SLOWLORIS.csv", low_memory=False)
+df8 = pd.read_csv(r"C:\Users\jpo2k\PycharmProjects\RESEARCHPROJECT\datasets\Friday-WorkingHours-Afternoon-DDos.pcap_ISCX.csv", low_memory=False)
 df9 = pd.read_csv(r"C:\Users\jpo2k\PycharmProjects\RESEARCHPROJECT\datasets\test_formatted_pcap_to_csv.csv", low_memory=False)
-df2 = pd.read_csv(r"C:\Users\jpo2k\PycharmProjects\RESEARCHPROJECT\datasets\data.csv",nrows=200000, low_memory=False)
+df2 = pd.read_csv(r"C:\Users\jpo2k\PycharmProjects\RESEARCHPROJECT\datasets\data.csv", low_memory=False)
 
 #make sure the csv file loaded
 print("CSV loaded successfully.")
@@ -206,7 +207,7 @@ for i in range(n_runs):
         n_estimators=250,
         learning_rate=0.1,
         max_depth=15,
-        scale_pos_weight=2.25,
+        scale_pos_weight=0.384,
         use_label_encoder=False,
         eval_metric='logloss',
         n_jobs=-1
