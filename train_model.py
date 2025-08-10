@@ -239,7 +239,7 @@ print(classification_report(y_test, y_pred))
 # Rasberry Pi
 model_path = os.path.join('models', 'ddos_rf_model.pkl')
 joblib.dump(xgb, model_path)
-print(f"✅ Model saved to {model_path}")
+print(f"Model saved to {model_path}")
 
 # Save features
 feature_list = [
@@ -267,4 +267,5 @@ feature_list = [
 feature_path = os.path.join('models', 'ddos_rf_features.json')
 with open(feature_path, 'w') as f:
     json.dump(feature_list, f)
-print(f"✅ Feature list saved to {feature_path}")
+print(f"Feature list saved to {feature_path}")
+
