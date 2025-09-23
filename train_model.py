@@ -67,23 +67,7 @@ df8.columns = df8.columns.str.strip()  # strip the whitespace from all column na
 df9.columns = df9.columns.str.strip()  # strip the whitespace from all column names
 
 
-# print("Exact column names in df:")
-# for col in df.columns:
-#     print(f"'{col}'")
-# print("Exact column names in df2:")
-# for col in df2.columns:
-#     print(f"'{col}'")
-# print("Exact column names in df3:")
-# for col in df3.columns:
-#     print(f"'{col}'")
-# print("Exact column names in df4:")
-# for col in df4.columns:
-#     print(f"'{col}'")
-# print("Exact column names in df5:")
-# for col in df5.columns:
-#     print(f"'{col}'")
-
-# Filter and relabel both datasets
+# Filter and relabel datasets
 df = df[df['Label'].isin(['BENIGN', 'DrDoS_DNS'])]
 df['Label'] = df['Label'].map({'BENIGN': 0, 'DrDoS_DNS': 1})
 
@@ -104,9 +88,7 @@ df6['Label'] = df6['Label'].map({'BENIGN': 0, 'DrDoS_DNS': 1})
 
 df7['Label'] = df7['Label'].apply(lambda x: 0 if str(x).strip().upper() == 'BENIGN' else 1)
 
-#
-# df8['Label'] = df8['Label'].astype(str).str.strip().str.upper()
-# print(df8['Label'].value_counts())
+
 df8 = df8[df8['Label'].isin(['BENIGN', 'DDoS'])]
 df8['Label'] = df8['Label'].map({'BENIGN': 0, 'DDoS': 1})
 
@@ -172,9 +154,8 @@ features = [
     'Average Packet Size'
 ]
 
-# Split df6 into train/test portions
 
-# Add df6_train to training set
+# Add training set
 train_df = pd.concat([df,df2,df3,df5,df7,df8], ignore_index=True)
 X_train = train_df[features]
 y_train = train_df['Label']
@@ -185,8 +166,8 @@ y_train = y_train.loc[X_train.index]
 
 
 
-# Prepare test set (right after df9 is processed)
-df_test = pd.concat([df4, df6], ignore_index=True)  # or another benign-heavy set
+# Prepare test set 
+df_test = pd.concat([df4, df6], ignore_index=True) 
 df_test = df_test[df_test['Label'].isin([0, 1])]    # ensure it's clean
 
 
@@ -234,7 +215,7 @@ avg_precision, avg_recall, avg_f1 = all_reports.mean(axis=0)
 
 print("=== Results ===")
 print(classification_report(y_test, y_pred))
-#
+
 # Save the trained model to a .pkl file so it caAn be used later for live detection. This is the program that will be going into the
 # Rasberry Pi
 model_path = os.path.join('models', 'ddos_rf_model.pkl')
@@ -268,4 +249,5 @@ feature_path = os.path.join('models', 'ddos_rf_features.json')
 with open(feature_path, 'w') as f:
     json.dump(feature_list, f)
 print(f"Feature list saved to {feature_path}")
+
 
